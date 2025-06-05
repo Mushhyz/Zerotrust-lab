@@ -1,0 +1,45 @@
+server:
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: prometheus.localhost
+        paths:
+          - path: /
+            pathType: Prefix
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+  # Persistent storage
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+
+  # Security context
+  securityContext:
+    runAsUser: 65534
+    runAsNonRoot: true
+    runAsGroup: 65534
+    fsGroup: 65534
+
+# Disable unnecessary components for basic setup
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+pushgateway:
+  enabled: false
+
+alertmanager:
+  enabled: false

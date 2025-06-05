@@ -1,0 +1,20 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireImageDigest
+metadata:
+  name: require-image-digest
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - gatekeeper-system
+      - opa
+      - ingress-nginx
+  parameters:
+    exemptImages:
+      # Images système exemptées temporairement
+      - "gcr.io/kubebuilder/"
+      - "registry.k8s.io/"
+      - "k8s.gcr.io/"

@@ -1,0 +1,64 @@
+auth:
+  adminUser: admin
+  adminPassword: admin123
+
+service:
+  type: ClusterIP
+
+# Resource constraints for Kind
+resources:
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+
+# JVM optimization for limited resources
+extraEnvVars:
+  - name: JAVA_OPTS_APPEND
+    value: "-Xms256m -Xmx512m -XX:MaxMetaspaceSize=256m"
+
+# Configuration Ingress pour NGINX
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hostname: keycloak.localhost
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  path: /
+  pathType: Prefix
+
+# Désactiver les ressources dépréciées
+rbac:
+  create: true
+  rules: []
+
+podSecurityPolicy:
+  enabled: false
+
+# Optimize for local development
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "postgres"
+    database: "keycloak"
+  primary:
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "250m"
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+
+# Reduce startup probe delays
+livenessProbe:
+  initialDelaySeconds: 300
+  periodSeconds: 30
+  timeoutSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  timeoutSeconds: 10

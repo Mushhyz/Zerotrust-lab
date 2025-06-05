@@ -1,0 +1,33 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlabels
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredlabels
+
+        violation[{"msg": msg}] {
+          required := input.parameters.labels
+          object_labels := object.get(input.review.object.metadata, "labels", {})
+          provided := object.keys(object_labels)
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("Missing required labels: %v", [missing])
+        }
+
+# Ce fichier est supprimé car il fait doublon avec constrainttemplate-required-labels.yaml
+# Les templates pour les labels requis sont gérés dans constrainttemplate-required-labels.yaml

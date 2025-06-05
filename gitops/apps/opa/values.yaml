@@ -1,0 +1,38 @@
+controllerManager:
+  ingress:
+    enabled: false
+
+enableRuntimeChecks: true
+
+# Gatekeeper configuration
+replicas: 1
+
+audit:
+  replicas: 1
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+image:
+  pullPolicy: Always
+
+postInstall:
+  labelNamespace:
+    enabled: true
+
+preUninstall:
+  deleteWebhookConfigurations:
+    enabled: true
+
+experimental:
+  mutatingWebhook:
+    enabled: false

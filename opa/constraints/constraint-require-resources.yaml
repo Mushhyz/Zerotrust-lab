@@ -1,0 +1,25 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredResources
+metadata:
+  name: require-pod-resources
+spec:
+  enforcementAction: warn
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces: 
+      - "kube-system"
+      - "kube-public"
+      - "kube-node-lease"
+      - "opa"
+      - "monitoring"
+      - "logging"
+      - "auth"
+      - "vault"
+      - "gitea"
+      - "ingress-nginx"
+      - "local-path-storage"
+  parameters:
+    limits: ["memory", "cpu"]
+    requests: ["memory", "cpu"]

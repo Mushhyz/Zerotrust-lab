@@ -1,0 +1,50 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8spsphostpath
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPHostPath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedHostPaths:
+              type: array
+              items:
+                type: object
+                properties:
+                  pathPrefix:
+                    type: string
+                  readOnly:
+                    type: boolean
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8spsphostpath
+
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.volumes[_]
+          volume.hostPath
+          
+          # Si aucun chemin autorisé n'est spécifié, interdire tous les hostPath
+          not input.parameters.allowedHostPaths
+          msg := sprintf("hostPath volumes are not allowed. Volume name: %v", [volume.name])
+        }
+
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.volumes[_]
+          hostPath := volume.hostPath
+          allowedPaths := input.parameters.allowedHostPaths
+          
+          # Vérifier si le chemin est autorisé
+          not path_allowed(hostPath.path, allowedPaths)
+          msg := sprintf("hostPath volume '%v' with path '%v' is not allowed", [volume.name, hostPath.path])
+        }
+
+        path_allowed(path, allowedPaths) {
+          allowedPath := allowedPaths[_]
+          startswith(path, allowedPath.pathPrefix)
+        }

@@ -1,0 +1,80 @@
+server:
+  # Disable dev mode for production-like setup
+  dev:
+    enabled: false
+  
+  # High availability configuration
+  ha:
+    enabled: true
+    replicas: 3
+    
+  # Data storage configuration
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: null
+    
+  # Audit storage
+  auditStorage:
+    enabled: true
+    size: 5Gi
+    
+  service:
+    type: ClusterIP
+    port: 8200
+    
+  # Resource limits
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  # Vault configuration
+  standalone:
+    enabled: false
+    
+  # Use file backend for persistent storage
+  config: |
+    ui = true
+    
+    listener "tcp" {
+      tls_disable = 1
+      address = "[::]:8200"
+      cluster_address = "[::]:8201"
+    }
+    
+    storage "file" {
+      path = "/vault/data"
+    }
+    
+    # Clustering
+    api_addr = "http://POD_IP:8200"
+    cluster_addr = "https://POD_IP:8201"
+
+ui:
+  enabled: true
+  serviceType: ClusterIP
+
+injector:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: vault.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 1000
+  fsGroup: 1000

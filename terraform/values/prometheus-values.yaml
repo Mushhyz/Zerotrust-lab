@@ -1,0 +1,39 @@
+# Désactiver les ressources dépréciées
+rbac:
+  create: true
+
+podSecurityPolicy:
+  enabled: false
+
+alertmanager:
+  enabled: true
+  podSecurityPolicy:
+    enabled: false
+
+server:
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+  podSecurityPolicy:
+    enabled: false
+  
+  # Configuration Ingress pour NGINX
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.localhost
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+
+kube-state-metrics:
+  podSecurityPolicy:
+    enabled: false
+
+nodeExporter:
+  podSecurityPolicy:
+    enabled: false
+
+pushgateway:
+  podSecurityPolicy:
+    enabled: false

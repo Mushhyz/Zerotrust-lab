@@ -1,0 +1,49 @@
+adminUser: admin
+admin:
+  existingSecret: "grafana-admin-secret"
+  userKey: admin-user
+  passwordKey: admin-password
+
+secrets:
+  adminPassword: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: grafana.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+grafana.ini:
+  server:
+    root_url: "%(protocol)s://%(domain)s/"
+  auth.generic_oauth:
+    enabled: true
+    name: Keycloak
+    allow_sign_up: true
+    client_id: grafana
+    client_secret: "{{ .Values.secrets.oauthClientSecret }}"
+    auth_url: http://keycloak.localhost/realms/zero-trust/protocol/openid-connect/auth
+    token_url: http://keycloak.localhost/realms/zero-trust/protocol/openid-connect/token
+    api_url: http://keycloak.localhost/realms/zero-trust/protocol/openid-connect/userinfo
+    scopes: openid profile email
+
+# Additional secrets for OAuth
+envFromSecret: "grafana-oauth-secret"
+
+# Resource limits
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

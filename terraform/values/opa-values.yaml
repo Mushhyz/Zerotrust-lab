@@ -1,0 +1,101 @@
+replicas: 1
+
+# Désactiver les ressources dépréciées
+podSecurityPolicy:
+  enabled: false
+
+audit:
+  enabled: true
+  replicas: 1
+
+controllerManager:
+  replicas: 1
+  # Ajouter des ressources suffisantes
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+webhook:
+  replicas: 1
+  timeoutSeconds: 60  # Augmenté de 30s à 60s pour les opérations CRD
+  failurePolicy: Ignore
+  # Améliorer la sélection des namespaces
+  namespaceSelector:
+    matchExpressions:
+    - key: admission.gatekeeper.sh/ignore
+      operator: DoesNotExist
+    - key: name
+      operator: NotIn
+      values:
+        - kube-system
+        - kube-public
+        - kube-node-lease
+        - ingress-nginx
+        - local-path-storage
+        - opa
+        - gatekeeper-system
+  # Ajouter des ressources suffisantes
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Configuration pour éviter les conflits au démarrage
+disableValidatingAdmissionWebhook: false
+disableMutation: false
+
+# Exclure certains namespaces critiques
+exemptNamespaces:
+  - kube-system
+  - kube-public
+  - kube-node-lease
+  - ingress-nginx
+  - local-path-storage
+  - opa
+  - gatekeeper-system
+
+# Configuration pour mode lab/dev
+violations:
+  allowedUsers: []
+  allowedKinds: []
+
+# Paramètres de debugging pour lab
+enableExternalData: false
+enableGeneratorResourceExpansion: false
+mutatingWebhookFailurePolicy: Ignore
+validatingWebhookFailurePolicy: Ignore
+
+# Configuration pour améliorer la stabilité
+postInstall:
+  labelNamespace:
+    enabled: true
+  probeWebhook:
+    enabled: true
+    
+# Améliorer les readiness/liveness probes avec plus de temps
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 9090
+  initialDelaySeconds: 15  # Augmenté de 5s à 15s
+  periodSeconds: 10
+  timeoutSeconds: 10  # Augmenté de 5s à 10s
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 9090
+  initialDelaySeconds: 15  # Augmenté de 5s à 15s
+  periodSeconds: 10
+  timeoutSeconds: 10  # Augmenté de 5s à 10s
+
+# Ajouter configuration pour améliorer la création des CRD
+constraintViolationsLimit: 20
+logLevel: INFO

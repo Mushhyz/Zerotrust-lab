@@ -1,0 +1,49 @@
+gitea:
+  admin:
+    username: "gitea_admin"
+    existingSecret: "gitea-admin-secret"
+    passwordKey: "password"
+    email: "gitea@example.local"
+
+secrets:
+  adminPassword: ""
+
+service:
+  http:
+    type: ClusterIP
+    port: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: gitea.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Database configuration with secrets
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: "gitea-db-secret"
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+      userPasswordKey: "user-password"
+
+# Resource limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000

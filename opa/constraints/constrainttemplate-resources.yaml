@@ -1,0 +1,45 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredresources
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredResources
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            limits:
+              type: array
+              items:
+                type: string
+            requests:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredresources
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          required_limits := input.parameters.limits
+          container_resources := object.get(container, "resources", {})
+          provided_limits := object.get(container_resources, "limits", {})
+          missing_limits := required_limits - object.keys(provided_limits)
+          count(missing_limits) > 0
+          msg := sprintf("Container '%s' is missing required resource limits: %v", [container.name, missing_limits])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          required_requests := input.parameters.requests
+          container_resources := object.get(container, "resources", {})
+          provided_requests := object.get(container_resources, "requests", {})
+          missing_requests := required_requests - object.keys(provided_requests)
+          count(missing_requests) > 0
+          msg := sprintf("Container '%s' is missing required resource requests: %v", [container.name, missing_requests])
+        }

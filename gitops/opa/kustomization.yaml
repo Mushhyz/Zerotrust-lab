@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Templates de base
+  - constraints/constrainttemplate-hostnetwork.yaml
+  - constraints/constrainttemplate-latest-tag.yaml
+  - constraints/constrainttemplate-privileged.yaml
+  - constraints/constrainttemplate-resources.yaml
+  
+  # Contraintes de base
+  - constraints/constraint-deny-hostnetwork.yaml
+  - constraints/constraint-deny-latest-tag.yaml
+  - constraints/constraint-deny-privileged.yaml
+  - constraints/constraint-require-resources.yaml
+  
+  # Contraintes avancées
+  - constraints/advanced-constraints/constrainttemplate-hostpath.yaml
+  - constraints/advanced-constraints/constrainttemplate-seccomp.yaml
+  - constraints/advanced-constraints/constrainttemplate-image-digest.yaml
+  - constraints/advanced-constraints/constraint-deny-hostpath.yaml
+  - constraints/advanced-constraints/constraint-require-seccomp.yaml
+  - constraints/advanced-constraints/constraint-require-image-digest.yaml
+
+namespace: opa
+
+commonLabels:
+  app.kubernetes.io/component: opa-policies
+  app.kubernetes.io/part-of: zero-trust-platform
+  app.kubernetes.io/managed-by: argocd
+
+patches:
+  # Ajouter des annotations pour Argo CD
+  - target:
+      kind: ConstraintTemplate
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-wave: "2"
+          
+  - target:
+      kind: K8sPSPHostNetwork
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-wave: "3"

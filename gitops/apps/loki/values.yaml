@@ -1,0 +1,40 @@
+loki:
+  auth_enabled: false
+  
+  # Storage configuration
+  storage:
+    type: filesystem
+    filesystem:
+      directory: /var/loki
+      
+  # Resource limits
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: loki.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Persistent storage
+persistence:
+  enabled: true
+  size: 5Gi
+
+# Security context
+securityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  runAsNonRoot: true

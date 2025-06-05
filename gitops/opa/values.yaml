@@ -1,0 +1,50 @@
+# Configuration pour OPA Gatekeeper avec support des contraintes avancées
+replicas: 1
+
+# Désactiver les ressources dépréciées
+podSecurityPolicy:
+  enabled: false
+
+audit:
+  enabled: true
+  replicas: 1
+
+controllerManager:
+  replicas: 1
+
+webhook:
+  replicas: 1
+  timeoutSeconds: 10
+  failurePolicy: Ignore
+  namespaceSelector:
+    matchExpressions:
+    - key: admission.gatekeeper.sh/ignore
+      operator: DoesNotExist
+
+# Configuration pour éviter les conflits au démarrage
+disableValidatingAdmissionWebhook: false
+disableMutation: false
+
+# Exclure certains namespaces critiques
+exemptNamespaces:
+  - kube-system
+  - kube-public
+  - kube-node-lease
+  - ingress-nginx
+  - local-path-storage
+
+# Configuration pour Argo CD
+postInstall:
+  # Appliquer automatiquement les contraintes avancées
+  applyConstraints: true
+  constraintPath: "/constraints/advanced-constraints"
+
+# Labels pour Argo CD
+labels:
+  app.kubernetes.io/managed-by: argocd
+  app.kubernetes.io/part-of: zero-trust-platform
+
+# Annotations pour synchronisation automatique
+annotations:
+  argocd.argoproj.io/sync-wave: "1"
+  argocd.argoproj.io/sync-options: "Prune=true,Delete=true"

@@ -1,0 +1,17 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPHostPath
+metadata:
+  name: deny-hostpath-volumes
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces: 
+      - "kube-system"
+      - "gatekeeper-system"
+      - "opa"
+      - "ingress-nginx"
+  parameters:
+    # Aucun chemin hostPath autorisé par défaut
+    allowedHostPaths: []

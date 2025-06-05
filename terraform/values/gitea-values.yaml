@@ -1,0 +1,39 @@
+gitea:
+  admin:
+    username: gitea_admin
+    password: gitea_password
+    email: gitea@example.com
+  config:
+    database:
+      DB_TYPE: postgres
+    server:
+      DOMAIN: gitea.localhost
+      ROOT_URL: http://gitea.localhost/
+
+# Configuration Ingress pour NGINX
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: gitea.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: gitea_db_password
+    password: gitea_db_password
+
+# Explicitly disable postgresql-ha to avoid conflicts
+postgresql-ha:
+  enabled: false
+
+# Désactiver les ressources dépréciées
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000

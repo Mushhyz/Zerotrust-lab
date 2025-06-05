@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zero-trust-root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mushm/zero-trust-lab
+    targetRevision: HEAD
+    path: gitops/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opa-advanced
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mushm/zero-trust-lab
+    targetRevision: HEAD
+    path: gitops/opa/constraints/advanced-constraints
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: opa
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: templates.gatekeeper.sh
+      kind: ConstraintTemplate
+      jsonPointers:
+        - /status
+    - group: constraints.gatekeeper.sh
+      kind: "*"
+      jsonPointers:
+        - /status
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opa-advanced
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/votre-org/Zerotrust-lab.git'
+    path: 'gitops/opa/constraints/advanced-constraints'
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: opa
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

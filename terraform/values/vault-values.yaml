@@ -1,0 +1,24 @@
+server:
+  dev:
+    enabled: true
+    devRootToken: "root"
+  dataStorage:
+    enabled: true
+    size: 1Gi
+  ha:
+    enabled: false
+  
+  # Configuration Ingress pour NGINX
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - host: vault.localhost
+        paths:
+          - /
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+# Désactiver les tests
+injector:
+  enabled: false

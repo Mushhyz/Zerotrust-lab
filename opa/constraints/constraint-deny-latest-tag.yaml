@@ -1,0 +1,20 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sDisallowLatestTag
+metadata:
+  name: disallow-latest-tag
+spec:
+  enforcementAction: dryrun  # Start in dryrun mode to avoid blocking
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "ReplicaSet", "DaemonSet", "StatefulSet"]
+    excludedNamespaces: ["kube-system", "kube-public", "opa", "monitoring", "logging", "auth", "vault", "gitea", "default"]
+  parameters:
+    exemptImages:
+      - "registry.k8s.io/pause"
+      - "k8s.gcr.io/pause"
+      - "quay.io/prometheus/*"
+      - "grafana/grafana"
+      - "bitnami/*"
